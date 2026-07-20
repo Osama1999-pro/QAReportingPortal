@@ -9,7 +9,7 @@ const cookieParser = require('cookie-parser');
 const path = require('path');
 
 const config = require('./config/config');
-const { testConnection } = require('./config/db');
+const { testConnection } = require('./config/jsonStore');
 const { helmetMiddleware, apiLimiter, xssSanitize } = require('./middleware/security');
 const { notFound, globalErrorHandler } = require('./middleware/errorHandler');
 
@@ -70,9 +70,10 @@ app.get('*', (req, res, next) => {
 app.use('/api', notFound);
 app.use(globalErrorHandler);
 
-/* ---------------- Boot ---------------- */
-async function start() {
-  await testConnection();
+/* ---------------- Boot (skip listen on Vercel serverless) ---------------- */
+testConnection();
+
+if (!process.env.VERCEL) {
   app.listen(config.port, () => {
     console.log('==================================================');
     console.log('  QA PORTAL API');
@@ -81,7 +82,5 @@ async function start() {
     console.log('==================================================');
   });
 }
-
-start();
 
 module.exports = app;

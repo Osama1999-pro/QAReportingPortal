@@ -1,22 +1,38 @@
-const { pool } = require('../config/db');
+const { readDb, update: mutate, nextId, nowIso } = require('../config/jsonStore');
 
 async function findAll() {
-  const [rows] = await pool.query(`
-    SELECT t.*, d.name AS department_name
-    FROM teams t LEFT JOIN departments d ON d.id = t.department_id
-    ORDER BY t.name`);
-  return rows;
+  const db = readDb();
+  return db.teams
+    .slice()
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map((t) => {
+      const dept = db.departments.find((d) => d.id === t.department_id);
+      return { ...t, department_name: dept ? dept.name : null };
+    });
 }
+
 async function create(name, departmentId) {
-  const [result] = await pool.query('INSERT INTO teams (name, department_id) VALUES (?,?)', [name, departmentId]);
-  return { id: result.insertId, name, department_id: departmentId };
+  const id = nextId('teams');
+  const row = { id, name, department_id: departmentId, created_at: nowIso() };
+  await mutate((db) => { db.teams.push(row); });
+  return row;
 }
+
 async function update(id, name, departmentId) {
-  await pool.query('UPDATE teams SET name = ?, department_id = ? WHERE id = ?', [name, departmentId, id]);
-  return { id, name, department_id: departmentId };
+  await mutate((db) => {
+    const row = db.teams.find((t) => t.id === Number(id));
+    if (row) {
+      row.name = name;
+      row.department_id = departmentId;
+    }
+  });
+  return { id: Number(id), name, department_id: departmentId };
 }
+
 async function remove(id) {
-  await pool.query('DELETE FROM teams WHERE id = ?', [id]);
+  await mutate((db) => {
+    db.teams = db.teams.filter((t) => t.id !== Number(id));
+  });
 }
 
 module.exports = { findAll, create, update, remove };

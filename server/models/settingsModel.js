@@ -1,16 +1,27 @@
-const { pool } = require('../config/db');
+const { readDb, update: mutate, nowIso } = require('../config/jsonStore');
 
 async function get() {
-  const [rows] = await pool.query('SELECT * FROM settings WHERE id = 1');
-  return rows[0] || null;
+  return readDb().settings || null;
 }
 
 async function update(data) {
   const fields = ['company_name', 'qa_pass_percentage', 'theme', 'logo_path'];
-  const sets = []; const params = [];
-  for (const f of fields) if (data[f] !== undefined) { sets.push(`${f} = ?`); params.push(data[f]); }
-  if (!sets.length) return get();
-  await pool.query(`UPDATE settings SET ${sets.join(', ')} WHERE id = 1`, params);
+  await mutate((db) => {
+    if (!db.settings) {
+      db.settings = {
+        id: 1,
+        company_name: 'QA Portal',
+        logo_path: null,
+        qa_pass_percentage: 80,
+        theme: 'light',
+        updated_at: nowIso(),
+      };
+    }
+    for (const f of fields) {
+      if (data[f] !== undefined) db.settings[f] = data[f];
+    }
+    db.settings.updated_at = nowIso();
+  });
   return get();
 }
 

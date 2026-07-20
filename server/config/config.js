@@ -1,6 +1,5 @@
 // ==========================================================
 // Central application configuration.
-// Reads from process.env (populated via dotenv in server.js).
 // ==========================================================
 
 module.exports = {
@@ -8,15 +7,6 @@ module.exports = {
   port: process.env.PORT || 5000,
   appUrl: process.env.APP_URL || 'http://localhost:5000',
   clientUrl: process.env.CLIENT_URL || 'http://localhost:5000',
-
-  db: {
-    host: process.env.DB_HOST || 'localhost',
-    port: Number(process.env.DB_PORT) || 3306,
-    user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD || '',
-    database: process.env.DB_NAME || 'qa_portal',
-    connectionLimit: Number(process.env.DB_CONNECTION_LIMIT) || 10,
-  },
 
   jwt: {
     secret: process.env.JWT_SECRET || 'dev_secret_change_me',

@@ -3,7 +3,7 @@
 // Registration of new users is handled by userController (admin-only),
 // there is no public self-signup for this internal portal.
 // ==========================================================
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const userModel = require('../models/userModel');
 const auditModel = require('../models/auditModel');
 const config = require('../config/config');
@@ -83,7 +83,7 @@ async function resetPassword(req, res, next) {
       return res.status(400).json({ success: false, message: 'Reset link is invalid or has expired.' });
     }
 
-    const user = await userModel.findById(payload.id);
+    const user = await userModel.findRawById(payload.id);
     if (!user || user.reset_token !== token) {
       return res.status(400).json({ success: false, message: 'Reset link is invalid or has expired.' });
     }

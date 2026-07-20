@@ -4,7 +4,7 @@
 // both operate on the same `users` table; role determines which
 // screen an account shows up on in the UI.
 // ==========================================================
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const userModel = require('../models/userModel');
 const auditModel = require('../models/auditModel');
 const config = require('../config/config');
